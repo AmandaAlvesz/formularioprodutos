@@ -15,7 +15,8 @@
 
     <div class="form-group">
         <label for="cpf">CPF:</label>
-        <input type="text" id="cpf" oninput="aplicarMascaraCPF(this)" onblur="buscarDadosCPF()" placeholder="CPF TESTE 123.456.789-00">
+        <input type="text" id="cpf" oninput="aplicarMascaraCPF(this)" onblur="buscarDadosCPF()" placeholder="123.456.789-00" aria-describedby="cpf-exemplo">
+        <small id="cpf-exemplo">CPF fictício para teste: <strong>123.456.789-00</strong>. Pressione Tab após digitar.</small>
         <div id="dados-usuario" class="user-data">
             <p><strong>Nome:</strong> <span id="nome"></span></p>
             <p><strong>Loja:</strong> <span id="loja"></span></p>
@@ -46,10 +47,11 @@
 </header>
 
 <main>
+    <p id="produtos-exemplo"><small>Códigos para teste: <strong>1001</strong> (creme para mãos) ou <strong>1002</strong> (sabonete vegetal). Digite somente o código e pressione Tab.</small></p>
     <div id="crud-container">
         <div class="crud-section">
             <label>Código do Produto: </label>
-            <input type="text" class="codigo-produto" onblur="buscarDadosProduto(this)">
+            <input type="text" class="codigo-produto" onblur="buscarDadosProduto(this)" placeholder="Ex.: 1001" aria-describedby="produtos-exemplo">
             <span id="nomeProduto" class="nome-produto">Nome do produto</span>
             <label>Quantidade: </label>
             <input type="number" class="quantidade-produto" value="1" oninput="atualizarValores(this)">
@@ -191,7 +193,7 @@
         newCrudSection.classList.add('crud-section');
         newCrudSection.innerHTML = `
             <label>Código do Produto: </label>
-            <input type="text" class="codigo-produto" onblur="buscarDadosProduto(this)">
+            <input type="text" class="codigo-produto" onblur="buscarDadosProduto(this)" placeholder="Ex.: 1001" aria-describedby="produtos-exemplo">
             <span class="nome-produto">Nome não disponível</span>
             <label>Quantidade: </label>
             <input type="number" class="quantidade-produto" value="1" oninput="atualizarValores(this)">

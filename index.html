@@ -94,64 +94,45 @@
         input.value = cpf;
     }
 
-    async function buscarDadosCPF() {
-        const cpf = document.getElementById('cpf').value;
-        const url = 'https://script.google.com/macros/s/AKfycbzLyETixTNJ1wbGHTK9TLjK4olBBgEiQFd93IcHDr61WXslnDjG7YC4dKgcocjE0_t8TQ/exec';
-        try {
-            const response = await fetch(`${url}?cpf=${cpf}`);
-            const data = await response.json();
+    // Dados fictícios para testar as consultas sem a planilha original.
+    const funcionariosExemplo = new Map([
+        ['12345678900', {
+            nome: 'Marina Costa (exemplo)',
+            loja: 'Loja Centro',
+            cargo: 'Consultor',
+            perfumaria: 'Perfumaria Exemplo',
+            dataliberacao: '01/11/2026'
+        }]
+    ]);
 
-            if (data.error) {
-                alert(data.error);
-                document.getElementById('dados-usuario').style.display = 'none';
-            } else {
-                document.getElementById('nome').innerText = data.nome || 'Não encontrado';
-                document.getElementById('loja').innerText = data.loja || 'Não encontrado';
-                document.getElementById('cargo').innerText = data.cargo || 'Não encontrado';
-                document.getElementById('perfumaria').innerText = data.perfumaria || 'Não encontrado';
-                document.getElementById('dataliberacao').innerText = data.dataliberacao || 'Não encontrado';
-                let dataLiberacao = new Date(data.dataliberacao);
-                document.getElementById('dataliberacao').innerText = 
-                    !isNaN(dataLiberacao) ? dataLiberacao.toLocaleDateString('pt-BR') : 'Não encontrado';
-                document.getElementById('dados-usuario').style.display = 'block';
-            }
-        } catch (error) {
-            console.error('Erro ao buscar dados do CPF:', error);
+    const produtosExemplo = new Map([
+        ['1001', { nomeProduto: 'Creme para mãos', valorBruto: 50 }],
+        ['1002', { nomeProduto: 'Sabonete vegetal', valorBruto: 25 }]
+    ]);
+
+    function buscarDadosCPF() {
+        const cpf = document.getElementById('cpf').value.replace(/\D/g, '');
+        const funcionario = funcionariosExemplo.get(cpf);
+
+        for (const campo of ['nome', 'loja', 'cargo', 'perfumaria', 'dataliberacao']) {
+            document.getElementById(campo).innerText = funcionario ? funcionario[campo] : '';
+        }
+
+        document.getElementById('dados-usuario').style.display = funcionario ? 'block' : 'none';
+        if (cpf && !funcionario) {
+            alert('CPF não encontrado. Para testar, use 123.456.789-00.');
         }
     }
-    let debounceTimeout;
-    async function buscarDadosProduto(input) {
-    clearTimeout(debounceTimeout);
-    debounceTimeout = setTimeout(async function() {
-        const codigoProduto = input.value.trim();  
-        const url = 'https://script.google.com/macros/s/AKfycbzLyETixTNJ1wbGHTK9TLjK4olBBgEiQFd93IcHDr61WXslnDjG7YC4dKgcocjE0_t8TQ/exec';
 
-        try {
-            const response = await fetch(`${url}?codigo=${codigoProduto}`);
-            const data = await response.json();
-            
-            if (data.error) {
-                input.parentElement.querySelector('.nome-produto').innerText = 'Nome não disponível';
-                input.parentElement.querySelector('.valor-bruto').innerText = 'R$ 0,00';
-                input.parentElement.querySelector('.valor-desconto').innerText = 'R$ 0,00';
-            } else {
-                input.parentElement.querySelector('.nome-produto').innerText = data.nomeProduto || 'Nome não disponível';
-                input.parentElement.querySelector('.valor-bruto').innerText = formatarMoeda(data.valorBruto || 0);
-                input.parentElement.querySelector('.valor-desconto').innerText = formatarMoeda(data.valorDesconto || 0);
-
-                atualizarValores(input.parentElement.querySelector('.quantidade-produto'));
-                atualizarTotais();
-            }
-        } catch (error) {
-            console.error('Erro ao buscar dados do produto:', error);
-        }
-    }, 500);  // 500ms de delay
-}
-
+    function buscarDadosProduto(input) {
+        const linha = input.closest('.crud-section');
+        const produto = produtosExemplo.get(input.value.trim());
+        linha.querySelector('.nome-produto').innerText = produto?.nomeProduto || 'Nome não disponível';
+        atualizarValores(linha.querySelector('.quantidade-produto'));
+    }
 
     function buscarProdutoManual(button) {
-        const codigoProduto = button.closest('.crud-section').querySelector('.codigo-produto').value;
-        buscarDadosProduto({ value: codigoProduto });
+        buscarDadosProduto(button.closest('.crud-section').querySelector('.codigo-produto'));
     }
 
     function formatarMoeda(valor) {
@@ -160,7 +141,8 @@
 
     function atualizarValores(input) {
         const container = input.parentElement;
-        const valorUnitarioBruto = parseFloat(container.querySelector('.valor-bruto').innerText.replace(',', '.').replace('R$ ', '').trim()) || 0;
+        const codigoProduto = container.querySelector('.codigo-produto').value.trim();
+        const valorUnitarioBruto = produtosExemplo.get(codigoProduto)?.valorBruto ?? 0;
         const quantidade = parseInt(container.querySelector('.quantidade-produto').value.trim()) || 0;
 
         let valorBrutoTotal = valorUnitarioBruto * quantidade;
